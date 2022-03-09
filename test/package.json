@@ -10,9 +10,12 @@
         "lint:fix": "prettier --write src/ ; eslint --fix src/"
     },
     "dependencies": {
+        "@types/node-forge": "^1.0.1",
         "arlocal": "^1.1.26",
         "arsnap-keygen": "file:../arsnap-keygen/pkg",
         "arweave": "1.10.18",
+        "node-forge": "^1.2.1",
+        "randchacha": "^1.0.2",
         "ts-node": "^10.4.0",
         "typescript": "^4.5.2"
     },
