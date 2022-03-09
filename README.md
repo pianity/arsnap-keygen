@@ -1,7 +1,8 @@
 # What is this?
 
-This repo showcases the usage of a WASM package to generate an Arweave key in a node.js
-environment.
+This repo showcases the usage of a Rust library to generate an Arweave key using a seed then import
+it in a node.js environment. The code in `test` uses the WebCrypto library so it's entirely
+compatible with any modern browser environment.
 
 The directory `arsnap-keygen` is a Rust library containing a single function `keygen`
 that generate an Arweave key. It takes as an argument an array of 32 bytes representing the seed
