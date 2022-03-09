@@ -80,9 +80,9 @@ async function testJwk(jwk: JWKInterface) {
     console.log("generated the key in", (Date.now() - time) / 1000, "seconds");
 
     if (pem === PREGENERATED_PEM) {
-        console.log("the key has been generated with secret:", SECRET);
+        console.log("the new key has been generated with this secret:", SECRET);
     } else {
-        console.log("the key has been generated with an unknown different secret");
+        console.log("the new key has been generated with an unknown secret");
     }
 
     const jwk = await pemToJwk(pem);
