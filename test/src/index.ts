@@ -1,15 +1,10 @@
 import { webcrypto } from "node:crypto";
 import Arweave from "arweave";
 import { JWKInterface } from "arweave/node/lib/wallet";
-import Arlocal from "arlocal";
 import { keygen } from "arsnap-keygen";
 
 import { SECRET, PREGENERATED_PEM } from "./generatedPem";
-import { forgeExample } from "./forgeExample";
-
-// Dirty hack to get the right typings for SubtleCrypto as it is apparently not included in @types/node.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const subtle = (webcrypto as any).subtle as typeof crypto.subtle;
+import { humanKeysExample } from "./humanKeys";
 
 /**
  * Convert the pem string to a binary representation
@@ -34,7 +29,7 @@ function pemToBin(pem: string) {
  * Convert the pem key to the official arweave key format
  */
 export async function pemToJwk(pem: string): Promise<JWKInterface> {
-    const cryptoKey = await subtle.importKey(
+    const cryptoKey = await webcrypto.subtle.importKey(
         "pkcs8",
         pemToBin(pem),
         {
@@ -45,7 +40,7 @@ export async function pemToJwk(pem: string): Promise<JWKInterface> {
         ["sign"],
     );
 
-    const jwk = (await subtle.exportKey("jwk", cryptoKey)) as JWKInterface;
+    const jwk = (await webcrypto.subtle.exportKey("jwk", cryptoKey)) as JWKInterface;
 
     return {
         kty: jwk.kty,
@@ -64,11 +59,7 @@ export async function pemToJwk(pem: string): Promise<JWKInterface> {
  * Try to use the key `jwk` to create an arweave transaction and sign it
  */
 export async function testJwk(jwk: JWKInterface) {
-    // Start a local Arweave mock instance to avoid having to request arweave.net when creating the
-    // Arweave instance.
-    const arlocal = new Arlocal(undefined, false);
-    await arlocal.start();
-    const arweave = Arweave.init({ host: "localhost", port: 1984, protocol: "http" });
+    const arweave = Arweave.init({ host: "arweave.net", port: 443, protocol: "https" });
 
     const tx = await arweave.createTransaction({ data: Math.random().toString().slice(-4) }, jwk);
 
@@ -76,13 +67,11 @@ export async function testJwk(jwk: JWKInterface) {
 
     const isTxValid = await arweave.transactions.verify(tx);
 
-    await arlocal.stop();
-
     return isTxValid;
 }
 
-(async () => {
-    console.log("generating the key...");
+async function wasmExample(): Promise<JWKInterface> {
+    console.log("generating using wasm method...");
 
     const time = Date.now();
 
@@ -91,7 +80,7 @@ export async function testJwk(jwk: JWKInterface) {
     console.log("generated the key in", (Date.now() - time) / 1000, "seconds");
 
     if (pem === PREGENERATED_PEM) {
-        console.log("the new key has been generated with this secret:", SECRET);
+        console.log("the new key has been generated with this secret:", "<redacted>");
     } else {
         console.log("the new key has been generated with an unknown secret");
     }
@@ -105,4 +94,16 @@ export async function testJwk(jwk: JWKInterface) {
     } else {
         console.log("the generated key is invalid");
     }
+
+    return jwk;
+}
+
+(async () => {
+    const wasmJwk = await wasmExample();
+
+    const humanJwk = await humanKeysExample();
+
+    console.log("arsnap-keygen:", wasmJwk);
+    console.log("human-crypto-keys:", humanJwk);
+    console.log("equality test:", wasmJwk.n === humanJwk.n);
 })();
