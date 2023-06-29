@@ -5,14 +5,15 @@ edition = "2021"
 authors = ["Eyal Chojnowski <eyal@pianity.com>"]
 repository = "https://github.com/pianity/arsnap-keygen"
 license = "MIT"
-description = "Testing Arweave key generation deterministically"
+description = "Generate an Arweave key derived from a seed"
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
-wasm-bindgen = "0.2.79"
+wasm-bindgen = "0.2.83"
 rsa = "0.5.0"
 rand = "0.8.5"
-rand_chacha = "0.3.1"
 getrandom = { version = "0.2.5", features = ["js"] }
+hmac-drbg = "0.3.0"
+sha2 = { version = "0.9" }
